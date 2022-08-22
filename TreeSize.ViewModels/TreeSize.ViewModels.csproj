@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	
+	<PropertyGroup>
+		<TargetFramework>net6.0-windows</TargetFramework>
+		<UseWPF>true</UseWPF>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\TreeSize.Resources\TreeSize.Resources.csproj" />
+	  <ProjectReference Include="..\TreeSize.Services\TreeSize.Services.csproj" />
+	</ItemGroup>
+
+</Project>

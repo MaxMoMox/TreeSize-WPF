@@ -1,0 +1,125 @@
+﻿<Window x:Class="TreeSize.Views.Windows.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:converters="clr-namespace:TreeSize.Converters.Converters;assembly=TreeSize.Converters"
+        xmlns:viewModels="clr-namespace:TreeSize.ViewModels.ViewModels;assembly=TreeSize.ViewModels"
+
+        Title="{Binding Title}"
+        Height="600" Width="1000"
+        MinHeight="600" MinWidth="1000">
+    <Window.Resources>
+        <converters:FileSizeConverter x:Key="FileSizeConverter"></converters:FileSizeConverter>
+        <converters:FileTypeIconConverter x:Key="FileTypeIconConverter"></converters:FileTypeIconConverter>
+    </Window.Resources>
+    <Window.DataContext>
+        <viewModels:MainWindowViewModel/>
+    </Window.DataContext>
+    <Grid Background="#FF404040" >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="20"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="20"/>
+        </Grid.RowDefinitions>
+
+        <TreeView Grid.Row="1" Grid.Column="1" MinHeight="340" Width="250" Background="#FF1F1F1F" Name="SmallTree"
+                  ItemsSource="{Binding Files, UpdateSourceTrigger=PropertyChanged}">
+
+            <behaviors:Interaction.Triggers>
+                <behaviors:EventTrigger EventName="SelectedItemChanged">
+                    <behaviors:InvokeCommandAction Command="{Binding SelectFileCommand, UpdateSourceTrigger=PropertyChanged}" 
+                                                   CommandParameter="{Binding ElementName=SmallTree,Path=SelectedItem}"/>
+                </behaviors:EventTrigger>
+            </behaviors:Interaction.Triggers>
+
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Path=Children}">
+                    <StackPanel Orientation="Horizontal" Name="Item" >
+                        <Image Name="Icon" Width="20" Height="20" Margin="0 0  10 0" Source="{Binding Converter={StaticResource FileTypeIconConverter}}"
+                               HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        <TextBlock Width="auto" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Margin="0 0 10 0" Foreground="#FF63A5BB"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        <TextBlock Width="auto" Text="{Binding Size, Converter= {StaticResource FileSizeConverter }, UpdateSourceTrigger=PropertyChanged}" Foreground="#FF93C2D2"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+
+        <ListView x:Name="DriveList" Grid.Row="3" Grid.Column="1" Height="160"  Width="250" 
+                  Background="#FF1F1F1F" Foreground="#FF63A5BB"
+                  ItemsSource="{Binding Drives, UpdateSourceTrigger=PropertyChanged}"
+                  SelectedItem="{Binding SelectedDrive, UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single">
+
+            <behaviors:Interaction.Triggers>
+                <behaviors:EventTrigger EventName="MouseDoubleClick">
+                    <behaviors:InvokeCommandAction 
+                        Command="{Binding TreeCommand, UpdateSourceTrigger=PropertyChanged}"
+                        CommandParameter="{Binding}">
+                    </behaviors:InvokeCommandAction>
+                </behaviors:EventTrigger>
+            </behaviors:Interaction.Triggers>
+
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Type" Width="35">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Image Width="20" Height="20" Source="{Binding Converter={StaticResource FileTypeIconConverter}}"></Image></DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                <GridViewColumn Header="Name" Width="35" DisplayMemberBinding="{ Binding Name, UpdateSourceTrigger=PropertyChanged}" ></GridViewColumn>
+                <GridViewColumn Header="Capacity" Width="85" DisplayMemberBinding="{Binding TotalCapacity , Converter={StaticResource FileSizeConverter}, UpdateSourceTrigger=PropertyChanged}"></GridViewColumn>
+                <GridViewColumn Header="Free" Width="85" DisplayMemberBinding="{Binding FreeSpace , Converter={StaticResource FileSizeConverter}, UpdateSourceTrigger=PropertyChanged}"></GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <ListView Name="MainListView" Grid.Row="1" Grid.RowSpan="3" Grid.Column="3" 
+                  Background="#FF1F1F1F" Foreground="#FF63A5BB"
+                  ItemsSource="{Binding SelectedFile.Children, UpdateSourceTrigger=PropertyChanged}">
+
+            <behaviors:Interaction.Triggers>
+                <behaviors:EventTrigger EventName="MouseDoubleClick">
+                    <behaviors:InvokeCommandAction 
+                        Command="{Binding SelectFileCommand, UpdateSourceTrigger=PropertyChanged}"
+                        CommandParameter="{Binding ElementName=MainListView,Path=SelectedItem}">
+                    </behaviors:InvokeCommandAction>
+                </behaviors:EventTrigger>
+            </behaviors:Interaction.Triggers>
+
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Icon" Width="35"  >
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Image Width="20" Height="20" Name="Icon" Source="{Binding Path=., Converter={StaticResource FileTypeIconConverter}}"></Image>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Type" Width="70" DisplayMemberBinding="{Binding Path=FileType, UpdateSourceTrigger=PropertyChanged}"></GridViewColumn>
+                    <GridViewColumn Header="Name" Width="200" DisplayMemberBinding="{Binding Path=Name, UpdateSourceTrigger=PropertyChanged}"></GridViewColumn>
+                    <GridViewColumn Header="Size" Width="100" DisplayMemberBinding="{Binding Path=Size, Converter={StaticResource FileSizeConverter}, UpdateSourceTrigger=PropertyChanged}"></GridViewColumn>
+                    <GridViewColumn Header="Path" Width="255" DisplayMemberBinding="{Binding Path=Path, UpdateSourceTrigger=PropertyChanged}">
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <TextBlock Name="Status" Grid.Row="4" Grid.Column="1" Width="220" Foreground="#FF93C2D2" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left"
+                   Margin="3" Text="{Binding Status, UpdateSourceTrigger=PropertyChanged}">
+        </TextBlock>
+    </Grid>
+</Window>
